@@ -1,0 +1,311 @@
+import java.io.*; 
+
+import java.nio.charset.StandardCharsets; 
+
+import java.util.ArrayList; 
+
+import java.util.Scanner; 
+
+  
+
+public class WordFrequency { 
+
+    public static void main(String[] args) throws IOException { 
+
+        Scanner scanner = new Scanner(System.in); 
+
+        BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in)); 
+
+        BufferedWriter consoleWriter = new BufferedWriter(new OutputStreamWriter(System.out)); 
+
+        try { 
+
+            consoleWriter.write("Введіть шлях до файлу зі списком слів: "); 
+
+            consoleWriter.flush(); 
+
+            String wordsFilePath = consoleReader.readLine(); 
+
+  
+
+            consoleWriter.write("Введіть шлях до файлу з текстом: "); 
+
+            consoleWriter.flush(); 
+
+            String textFilePath = consoleReader.readLine(); 
+
+  
+
+            consoleWriter.write("Введіть шлях до вихідного файлу: "); 
+
+            consoleWriter.flush(); 
+
+            String outputFilePath = consoleReader.readLine(); 
+
+  
+
+            ArrayList<String> wordsList = new ArrayList<>(); 
+
+            ArrayList<String> textList = new ArrayList<>(); 
+
+  
+
+            // Read words file 
+
+            while (true) { 
+
+                BufferedReader wordsReader; 
+
+                try { 
+
+                    wordsReader = new BufferedReader(new InputStreamReader(new FileInputStream(wordsFilePath), StandardCharsets.UTF_8)); 
+
+                    String line; 
+
+                    while ((line = wordsReader.readLine()) != null) { 
+
+                        String[] wordArray = line.split("\\s+"); 
+
+                        for (String word : wordArray) { 
+
+                            if (word.matches("[a-zA-Z]+")) { 
+
+                                wordsList.add(word); 
+
+                            } 
+
+                        } 
+
+                    } 
+
+                    wordsReader.close(); 
+
+                    break; 
+
+                } catch (FileNotFoundException e) { 
+
+                    consoleWriter.write("The file " + wordsFilePath + " was not found. Please enter a valid path: "); 
+
+                    consoleWriter.flush(); 
+
+                    wordsFilePath = consoleReader.readLine(); 
+
+                } 
+
+            } 
+
+  
+
+            // Read text file 
+
+            while (true) { 
+
+                BufferedReader textReader; 
+
+                try { 
+
+                    textReader = new BufferedReader(new InputStreamReader(new FileInputStream(textFilePath), StandardCharsets.UTF_8)); 
+
+                    String line; 
+
+                    while ((line = textReader.readLine()) != null) { 
+
+                        String[] wordArray = line.split("\\s+"); 
+
+                        for (String word : wordArray) { 
+
+                            if (word.matches("[a-zA-Z]+")) { 
+
+                                textList.add(word); 
+
+                            } 
+
+                        } 
+
+                    } 
+
+                    textReader.close(); 
+
+                    break; 
+
+                } catch (FileNotFoundException e) { 
+
+                    consoleWriter.write("The file " + textFilePath + " was not found. Please enter a valid path: "); 
+
+                    consoleWriter.flush(); 
+
+                    textFilePath = consoleReader.readLine(); 
+
+                } 
+
+            } 
+
+            while (true) { 
+
+                try { 
+
+                    File outputFile = new File(outputFilePath); 
+
+                    if (outputFile.exists()) { 
+
+                        consoleWriter.write("The output file already exists. Do you want to overwrite it or append to the existing file? (o/a) "); 
+
+                        consoleWriter.flush(); 
+
+                        String response = consoleReader.readLine().toLowerCase(); 
+
+                        while (!response.equals("o") && !response.equals("a")) { 
+
+                            consoleWriter.write("Invalid response. Do you want to overwrite the output file or append to the existing file? (o/a) "); 
+
+                            consoleWriter.flush(); 
+
+                            response = consoleReader.readLine().toLowerCase(); 
+
+                        } 
+
+                        if (response.equals("o")) { 
+
+                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath), StandardCharsets.UTF_8)); 
+
+                            writeUncommonWords(writer, wordsList, textList); 
+
+                            consoleWriter.write("Uncommon words have been written to " + outputFilePath); 
+
+                            consoleWriter.flush(); 
+
+                            break; 
+
+                        } else if (response.equals("a")) { 
+
+                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath, true), StandardCharsets.UTF_8)); 
+
+                            writeUncommonWords(writer, wordsList, textList); 
+
+                            consoleWriter.write("Uncommon words have been appended to " + outputFilePath); 
+
+                            consoleWriter.flush(); 
+
+                            break; 
+
+                        } 
+
+                    } else { 
+
+                        consoleWriter.write("The output file does not exist. Do you want to create it? (y/n) "); 
+
+                        consoleWriter.flush(); 
+
+                        String response = consoleReader.readLine().toLowerCase(); 
+
+                        while (!response.equals("y") && !response.equals("n")) { 
+
+                            consoleWriter.write("Invalid response. Do you want to create the output file? (y/n) "); 
+
+                            consoleWriter.flush(); 
+
+                            response = consoleReader.readLine().toLowerCase(); 
+
+                        } 
+
+                        if (response.equals("n")) { 
+
+                            consoleWriter.write("Enter a new path for the output file: "); 
+
+                            consoleWriter.flush(); 
+
+                            outputFilePath = consoleReader.readLine(); 
+
+                            continue; 
+
+                        } 
+
+                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath), StandardCharsets.UTF_8)); 
+
+                        writeUncommonWords(writer, wordsList, textList); 
+
+                        consoleWriter.write("Uncommon words have been written to " + outputFilePath); 
+
+                        consoleWriter.flush(); 
+
+                        break; 
+
+                    } 
+
+                } catch (IOException e) { 
+
+                    consoleWriter.write("An error occurred while creating the output file: " + e.getMessage()); 
+
+                    consoleWriter.flush(); 
+
+                    consoleWriter.write("Enter a new path for the output file: "); 
+
+                    consoleWriter.flush(); 
+
+                    outputFilePath = consoleReader.readLine(); 
+
+                } 
+
+            } 
+
+        } catch (IOException e) { 
+
+            consoleWriter.write("An IOException occurred: " + e.getMessage()); 
+
+            consoleWriter.flush(); 
+
+        } finally { 
+
+            try { 
+
+                consoleReader.close(); 
+
+                consoleWriter.close(); 
+
+            } catch (IOException e) { 
+
+                e.printStackTrace(); 
+
+            } 
+
+        } 
+
+    } 
+
+  
+
+    public static void writeUncommonWords(BufferedWriter writer, ArrayList<String> list1, ArrayList<String> list2) throws IOException { 
+
+        ArrayList<String> uncommonWords = getUncommonWords(list1, list2); 
+
+        for (String word : uncommonWords) { 
+
+            writer.write(word + System.lineSeparator()); 
+
+        } 
+
+        writer.close(); 
+
+    } 
+
+  
+
+    public static ArrayList<String> getUncommonWords(ArrayList<String> list1, ArrayList<String> list2) { 
+
+        ArrayList<String> uncommonWords = new ArrayList<>(); 
+
+        for (String word : list1) { 
+
+            if (!list2.contains(word)) { 
+
+                uncommonWords.add(word); 
+
+            } 
+
+        } 
+
+        return uncommonWords; 
+
+    } 
+
+} 
